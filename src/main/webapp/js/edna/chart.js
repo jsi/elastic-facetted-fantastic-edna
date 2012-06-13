@@ -1,18 +1,21 @@
     var chart,
-            categories = ['ARO', 'MER', 'TSI', 'DAA', 'SRS', 'JSI', 'BHJ', 'TLO', 'LJL', 'ODA',
-                'SIW', 'RMY', 'JVS', 'TAN', 'ABU', 'KLA', 'ESU', 'TOM', 'HSK', 'RFO'];
+            categories = ['ABU', 'ARO', 'BHJ', 'DAA', 'ESU', 'HSK', 'KLA', 'LJL', 'MER', 'MLA', 'JSI',
+                'JVS', 'ODA', 'RFO', 'RMY', 'SIW', 'SRS', 'TAN', 'TLO', 'TOM', 'TSI'];
     $(document).ready(function() {
         chart = new Highcharts.Chart({
                                          chart: {
                                              renderTo: 'ednaChart',
                                              type: 'bar'
                                          },
+
                                          title: {
-                                             text: 'Hours in Edna by resource, 2011'
+                                             text: 'Hours in Enonic by resource, 2011'
                                          },
+
                                          subtitle: {
-                                             text: 'Source: www.census.gov'
+                                             text: 'Source: Edna'
                                          },
+
                                          xAxis: [{
                                              categories: categories,
                                              reversed: false
@@ -28,36 +31,44 @@
                                              },
                                              labels: {
                                                  formatter: function(){
-                                                     return (Math.abs(this.value) / 1000000) + 'M';
+                                                     return (Math.abs(this.value));
                                                  }
                                              },
-                                             min: -4000000,
-                                             max: 4000000
+                                             min: -2000,
+                                             max: 2000
                                          },
 
                                          plotOptions: {
                                              series: {
+                                                 cursor: 'pointer',
+                                                 events: {
+                                                     click: function(event) {
+                                                         alert(this.name + ' for ' + event.point.category + ' clicked\n'+
+                                                                       'Alt: '+ event.altKey +'\n'+
+                                                                       'Control: '+ event.ctrlKey +'\n'+
+                                                                       'Shift: '+ event.shiftKey +'\n'+
+                                                                       'URL to open: http://elasticsearch.server/facet?billable='+this.name+'&user='+event.point.category );
+                                                     }
+                                                 },
                                                  stacking: 'normal'
                                              }
                                          },
 
                                          tooltip: {
-                                             formatter: function(){
-                                                 return '<b>'+ this.series.name +', age '+ this.point.category +'</b><br/>'+
-                                                         'Population: '+ Highcharts.numberFormat(Math.abs(this.point.y), 0);
+                                             formatter: function() {
+                                                 return '<b>'+ this.series.name +', '+ this.point.category +'</b><br/>'+
+                                                         'Hours: '+ Highcharts.numberFormat(Math.abs(this.point.y), 0);
                                              }
                                          },
 
                                          series: [{
                                              name: 'Billable',
-                                             data: [-1746181, -1884428, -2089758, -2222362, -2537431, -2507081, -2443179,
-                                                 -2664537, -3556505, -3680231, -3143062, -2721122, -2229181, -2227768,
-                                                 -2176300, -1329968, -836804, -354784, -90569, -27012]
+                                             data: [-1769, -14, -1501, -1609, -363, 0, 0, -1603, 0, -1305, 0,
+                                                 -4, 0, -1563, -45, 0, 0, -312, -559, 0, -2]
                                          }, {
                                              name: 'Unbillable',
-                                             data: [1656154, 1787564, 1981671, 2108575, 2403438, 2366003, 2301402, 2519874,
-                                                 3360596, 3493473, 3050775, 2759560, 2304444, 2426504, 2568938, 1785638,
-                                                 1447162, 1005011, 330870, 34482]
+                                             data: [215, 1872, 371, 349, 1825, 1183, 1899, 320, 1921, 670, 1904,
+                                                 1883, 0, 388, 1833, 0, 1974, 1641, 1374, 1851, 1937]
                                          }]
                                      });
     });
