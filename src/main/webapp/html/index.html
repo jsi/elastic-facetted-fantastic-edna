@@ -49,6 +49,7 @@
 
 <script src="../js/jquery/jquery-1.7.2.min.js"></script>
 <script src="../js/highcharts/highcharts.src.js" type="text/javascript"></script>
+<script src="../js/edna/es-searchbuilder.js"></script>
 <script src="../js/edna/search.js"></script>
 <script src="../js/edna/chart.js"></script>
 <script src="../js/elasticsearch-js/elasticsearch.js" type="text/javascript"></script>
@@ -56,30 +57,54 @@
 
 <script type="text/javascript">
 
-    var onFindResults = function( entries )
+    var onSearchResults = function( jsonData )
     {
+        console.log( "jsonData: ", jsonData );
+
         var tableSrc = $( '<table class="table table-bordered table-striped">' +
-                          '<thead><tr><th>Resource</th><th>Project</th><th>Hours</th><th>Date</th></tr></thead>' +
+                          '<thead><tr>' +
+                                  '<th>Date</th>' +
+                                  '<th>Hours billable</th>' +
+                                  '<th>Hours unbillable</th>' +
+                                  '</tr></thead>' +
                           '<tbody></tbody></table>' );
 
         $( '#output' ).empty().append( tableSrc );
         var table = $( '#output > table > tbody' );
 
-        $.each( entries, function( i, v )
+        var tableData = new Array();
+        $.each( jsonData.billable, function( i, entry )
+        {
+            var date = new Date( entry.time );
+            tableData[i] = { "date" : date.toDateString(), "hoursBillable" : entry.total  };
+        } );
+
+        $.each( jsonData.unbillable, function( i, entry )
+        {
+            tableData[i].hoursUnbillable = entry.total;
+        } );
+
+        console.log( "tableData", tableData );
+
+        $.each( tableData, function( i, entry )
         {
             var tr = $( '<tr/>' );
-            var col1 = $( '<td/>' ).text( v.resource );
-            var col2 = $( '<td/>' ).text( v.project );
-            var col3 = $( '<td/>' ).text( v.hours );
-            var dateVal = v.logDate ? v.logDate.split( ' ' )[0] : '';
-            var col4 = $( '<td/>' ).text( dateVal );
-            tr.append( col1 ).append( col2 ).append( col3 ).append( col4 );
+
+            var dateVal = new Date( entry.date );
+
+            var col1 = $( '<td/>' ).text( dateVal.toDateString() );
+            var col2 = $( '<td/>' ).text( entry.hoursBillable );
+            var col3 = $( '<td/>' ).text( entry.hoursUnbillable );
+
+            tr.append( col1 ).append( col2 ).append( col3 );
             table.append( tr );
         } )
     };
 
     $("#testBut").click(function(){
-        Edna.findAll(onFindResults, 0 , 20);
+
+        Edna.search(onSearchResults, 0 , 200);
+
     });
 
 </script>

@@ -1,0 +1,19 @@
+{
+    "query":{
+        "match_all":{}
+    },
+    "filter":{
+        "term":{
+            "billable":true
+        }
+    },
+    "facets":{
+        "histo1":{
+            "date_histogram":{
+                "key_field":"logDate",
+                "value_field":"hours",
+                "interval":"day"
+            }
+        }
+    }
+}
