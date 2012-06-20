@@ -10,8 +10,8 @@ Edna.search = function ( callbackResult, from, size )
         jsonBillable = data.facets.prday.entries;
 
         var unbillableSearch = new Edna.SearchBuilder();
-        unbillableSearch.setQuery( '{ "match_all" : {} }' );
-        unbillableSearch.setFilter( '{ "term" : { "billable" : false } }' );
+        unbillableSearch.setQuery( '{ "field" : {"billable" : false} }' );
+        //unbillableSearch.setFilter( '{ "term" : { "billable" : false } }' );
         unbillableSearch.addFacet( 'prday', '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "day" } }' );
         var es = new ElasticSearch( {callback:handleUnbillableSearch, host:"localhost", port:9200 } );
         console.log( "unbillableSearch.toESJson()", unbillableSearch.toESJson()  );
@@ -26,8 +26,8 @@ Edna.search = function ( callbackResult, from, size )
     };
 
     var billableSearch = new Edna.SearchBuilder();
-    billableSearch.setQuery( '{ "match_all" : {} }' );
-    billableSearch.setFilter( '{ "term" : { "billable" : true } }' );
+    billableSearch.setQuery( '{ "field" : {"billable" : true} }' );
+    //billableSearch.setFilter( '{ "term" : { "billable" : true } }' );
     billableSearch.addFacet( 'prday', '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "day" } }' );
 
     var es = new ElasticSearch( {callback:handleBillableSearch, host:"localhost", port:9200 } );
