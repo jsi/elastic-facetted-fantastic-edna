@@ -1,6 +1,6 @@
 var Edna = Edna || {};
 
-Edna.search = function ( callbackResult, from, size )
+Edna.search = function ( callbackResult, from, to )
 {
     var jsonBillable;
     var jsonUnbillable;
