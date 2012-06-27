@@ -5,88 +5,114 @@ Edna.search = function ( callbackResult, from, to )
     var jsonBillable;
     var jsonUnbillable;
     var dateFilter = {
-        "numeric_range": {
-            "logDate": {
-                "lt": to,
-                "gte": from
+        "numeric_range":{
+            "logDate":{
+                "lt":to,
+                "gte":from
             }
         }
     };
 
-    var handleBillableSearch = function( data, xhr )
+    var handleBillableSearch = function ( data, xhr )
     {
         jsonBillable = data.facets.prday.entries;
 
-        var queryUnbillable = {"filtered": {"query": {}, "filter": {}}};
-        queryUnbillable.filtered.query = { "field" : {"billable" : false} };
+        var queryUnbillable = {"filtered":{"query":{}, "filter":{}}};
+        queryUnbillable.filtered.query = { "field":{"billable":false} };
         queryUnbillable.filtered.filter = dateFilter;
-        var queryUnbillableStr = JSON.stringify(queryUnbillable);
+        var queryUnbillableStr = JSON.stringify( queryUnbillable );
 
         var unbillableSearch = new Edna.SearchBuilder();
         unbillableSearch.setQuery( queryUnbillableStr );
-        unbillableSearch.addFacet( 'prday', '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "day" } }' );
+        unbillableSearch.addFacet( 'prday',
+                                   '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "day" } }' );
         var es = new ElasticSearch( {callback:handleUnbillableSearch, host:"leela", port:9200 } );
-        console.log( "unbillableSearch.toESJson()", unbillableSearch.toESJson()  );
         es.request( "POST", "edna4000/_search", unbillableSearch.toESJson() );
     };
 
-    var handleUnbillableSearch = function( data, xhr )
+    var handleUnbillableSearch = function ( data, xhr )
     {
         jsonUnbillable = data.facets.prday.entries;
-        var result = { "billable" : jsonBillable, "unbillable" : jsonUnbillable };
+        var result = { "billable":jsonBillable, "unbillable":jsonUnbillable };
         callbackResult( result );
     };
 
-    var queryBillable = {"filtered": {"query": {}, "filter": {}}};
-    queryBillable.filtered.query = { "field" : {"billable" : true} };
+    var queryBillable = {"filtered":{"query":{}, "filter":{}}};
+    queryBillable.filtered.query = { "field":{"billable":true} };
     queryBillable.filtered.filter = dateFilter;
-    var queryBillableStr = JSON.stringify(queryBillable);
-
+    var queryBillableStr = JSON.stringify( queryBillable );
 
     var billableSearch = new Edna.SearchBuilder();
     billableSearch.setQuery( queryBillableStr );
     billableSearch.addFacet( 'prday', '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "day" } }' );
 
     var es = new ElasticSearch( {callback:handleBillableSearch, host:"leela", port:9200 } );
-    console.log( "billableSearch.toESJson()", billableSearch.toESJson()  );
     es.request( "POST", "edna4000/_search", billableSearch.toESJson() );
-
 };
 
-Edna.handleSearchResult = function( jsonData )
+Edna.handleSearchResult = function ( jsonData )
 {
-    console.log( "jsonData: ", jsonData );
-    var labels = [], billableArray = [], unbillableArray = [];
+    var date;
 
-    var tableData = new Array();
-    $.each( jsonData.billable, function( i, entry )
+    var tableData = [];
+    var indexOfPeriods = {};
+
+    $.each( jsonData.billable, function ( i, entry )
     {
-        var date = new Date( entry.time );
-        tableData[i] = { "date" : date.toDateString(), "hoursBillable" : entry.total, "hoursUnbillable": 0  };
+        date = new Date( entry.time );
+        var resultObject = { "date":date.toDateString(), "dateInMillis":date.getTime(), "hoursBillable":entry.total, "hoursUnbillable":0  };
+        indexOfPeriods[ moment( date ).format( "YYYY-MM-DD" ) ] = i;
+        tableData[i] = resultObject;
     } );
 
-    $.each( jsonData.unbillable, function( i, entry )
+    $.each( jsonData.unbillable, function ( i, entry )
     {
-        if (!tableData[i]) {
-            var date = new Date( entry.time );
-            tableData[i] = { "date" : date.toDateString(), "hoursBillable" : 0 };
+        date = new Date( entry.time );
+        var tableRow = indexOfPeriods[moment( date ).format( "YYYY-MM-DD" )];
+
+        if ( tableRow == undefined )
+        {
+            //console.log( moment( date ).format( "YYYY-MM-DD" ) );
+            // creating new row at end
+            tableRow = tableData.length;
+            tableData[tableRow] = { "date":new Date( entry.time ).toDateString(), "dateInMillis":date.getTime(), "hoursBillable":0 };
         }
-        tableData[i].hoursUnbillable = entry.total;
+
+        tableData[tableRow].hoursUnbillable = entry.total;
     } );
 
-    $.each( tableData, function( i, entry )
+    tableData.sort( function ( a, b )
+                    {
+                        var aAsMoment = moment( a.dateInMillis );
+                        var bAsMoment = moment( b.dateInMillis );
+
+                        var diff = aAsMoment.diff( bAsMoment );
+                        if ( diff == 0 )
+                        {
+                            return 0;
+                        }
+                        else if( diff > 0 )
+                        {
+                            return 1;
+                        }
+                        else
+                        {
+                            return -1;
+                        }
+                    } );
+
+    // translate to arrays for chart
+    var labelsForChart = [], billableArrayForChart = [], unbillableArrayForChart = [];
+    $.each( tableData, function ( i, entry )
     {
-        labels.push(entry.date);
-        billableArray.push(entry.hoursBillable);
-        unbillableArray.push(- entry.hoursUnbillable);
+        //console.log( "tabledata: " + moment( entry.dateInMillis ).format( "YYYY-MM-DD" ) + ": " + entry.hoursBillable + " : " + entry.hoursUnbillable );
+        labelsForChart.push( moment( entry.dateInMillis ).format( "YYYY-MM-DD" ) );
+        billableArrayForChart.push( entry.hoursBillable );
+        unbillableArrayForChart.push( (-entry.hoursUnbillable) );
     } );
 
-    Edna.showChart(labels, billableArray, unbillableArray);
+    Edna.showChart( labelsForChart, billableArrayForChart, unbillableArrayForChart );
 };
 
 Edna.Utils = Edna.Utils || {};
 
-Edna.Utils.something = function()
-{
-
-}
