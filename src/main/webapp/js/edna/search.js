@@ -1,6 +1,6 @@
 var Edna = Edna || {};
 
-Edna.search = function ( callbackResult, from, to )
+Edna.search = function ( callbackResult, from, to, periodType )
 {
     var jsonBillable;
     var jsonUnbillable;
@@ -33,7 +33,11 @@ Edna.search = function ( callbackResult, from, to )
     var handleUnbillableSearch = function ( data, xhr )
     {
         jsonUnbillable = data.facets.prday.entries;
-        var result = { "billable":jsonBillable, "unbillable":jsonUnbillable };
+        var result = {
+            "periodType": periodType,
+            "billable":jsonBillable,
+            "unbillable":jsonUnbillable
+        };
         callbackResult( result );
     };
 
@@ -56,19 +60,33 @@ Edna.handleSearchResult = function ( jsonData )
 
     var tableData = [];
     var indexOfPeriods = {};
+    var periodType = jsonData.periodType;
+    var periodFormat = "YYYY-MM-DD";
+    if( periodType == "year" )
+    {
+        periodFormat = "YYYY";
+    }
+    else if( periodType == "month" )
+    {
+        periodFormat = "YYYY-MM";
+    }
+    else if( periodType == "week" )
+    {
+        periodFormat = "YYYY-w";
+    }
 
     $.each( jsonData.billable, function ( i, entry )
     {
         date = new Date( entry.time );
         var resultObject = { "date":date.toDateString(), "dateInMillis":date.getTime(), "hoursBillable":entry.total, "hoursUnbillable":0  };
-        indexOfPeriods[ moment( date ).format( "YYYY-MM-DD" ) ] = i;
+        indexOfPeriods[ moment( date ).format( periodFormat ) ] = i;
         tableData[i] = resultObject;
     } );
 
     $.each( jsonData.unbillable, function ( i, entry )
     {
         date = new Date( entry.time );
-        var tableRow = indexOfPeriods[moment( date ).format( "YYYY-MM-DD" )];
+        var tableRow = indexOfPeriods[moment( date ).format( periodFormat )];
 
         if ( tableRow == undefined )
         {
@@ -106,7 +124,7 @@ Edna.handleSearchResult = function ( jsonData )
     $.each( tableData, function ( i, entry )
     {
         //console.log( "tabledata: " + moment( entry.dateInMillis ).format( "YYYY-MM-DD" ) + ": " + entry.hoursBillable + " : " + entry.hoursUnbillable );
-        labelsForChart.push( moment( entry.dateInMillis ).format( "YYYY-MM-DD" ) );
+        labelsForChart.push( moment( entry.dateInMillis ).format( periodFormat ) );
         billableArrayForChart.push( entry.hoursBillable );
         unbillableArrayForChart.push( (-entry.hoursUnbillable) );
     } );

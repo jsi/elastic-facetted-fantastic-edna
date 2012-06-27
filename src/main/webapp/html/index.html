@@ -67,38 +67,38 @@
         <div class="btn-group">
             Select periodization:
             &nbsp;
-            Year: <input id="periodYear" type="radio" size="16"/>
+            Year: <input name="periodType" id="periodYear" value="year" type="radio" size="16" checked/>
             &nbsp;&nbsp;&nbsp;
-            Month: <input id="periodMonth" type="radio" size="16"/>
+            Month: <input name="periodType" id="periodMonth" value="month" type="radio" size="16"/>
             &nbsp;&nbsp;&nbsp;
-            Week: <input id="periodWeek" type="radio" size="16"/>
+            Week: <input name="periodType" id="periodWeek" value="week" type="radio" size="16"/>
             &nbsp;&nbsp;&nbsp;
-            Day: <input id="periodDay" type="radio" size="16"/>
+            Day: <input name="periodType" id="periodDay" value="day" type="radio" size="16"/>
         </div>
         <div class="btn-group">
             Select resource:
             &nbsp;
-            ARO: <input id="resARO" type="radio" size="16"/>
+            ARO: <input name="resource" value="ARO" id="resARO" type="radio" size="16"/>
             &nbsp;&nbsp;
-            BHJ: <input id="resBHJ" type="radio" size="16"/>
+            BHJ: <input name="resource" value="BHJ" id="resBHJ" type="radio" size="16"/>
             &nbsp;&nbsp;
-            DAA: <input id="resDAA" type="radio" size="16"/>
+            DAA: <input name="resource" value="DAA" id="resDAA" type="radio" size="16"/>
             &nbsp;&nbsp;
-            ESU: <input id="resESU" type="radio" size="16"/>
+            ESU: <input name="resource" value="ESU" id="resESU" type="radio" size="16"/>
             &nbsp;&nbsp;
-            JSI: <input id="resJSI" type="radio" size="16"/>
+            JSI: <input name="resource" value="JSI" id="resJSI" type="radio" size="16"/>
             &nbsp;&nbsp;
-            JVS: <input id="resJVS" type="radio" size="16"/>
+            JVS: <input name="resource" value="JVS" id="resJVS" type="radio" size="16"/>
             &nbsp;&nbsp;
-            MER: <input id="resMER" type="radio" size="16"/>
+            MER: <input name="resource" value="MER" id="resMER" type="radio" size="16"/>
             &nbsp;&nbsp;
-            RMY: <input id="resRMY" type="radio" size="16"/>
+            RMY: <input name="resource" value="RMY" id="resRMY" type="radio" size="16"/>
             &nbsp;&nbsp;
-            TAN: <input id="resTAN" type="radio" size="16"/>
+            TAN: <input name="resource" value="TAN" id="resTAN" type="radio" size="16"/>
             &nbsp;&nbsp;
-            TLO: <input id="resTLO" type="radio" size="16"/>
+            TLO: <input name="resource" value="TLO" id="resTLO" type="radio" size="16"/>
             &nbsp;&nbsp;
-            TSI: <input id="resTSI" type="radio" size="16"/>
+            TSI: <input name="resource" value="TSI" id="resTSI" type="radio" size="16"/>
         </div>
     </div>
 
@@ -135,7 +135,8 @@
         var to = $('#endDate').val();
         from = moment(from, "YYYY-MM-DD").format("YYYY/MM/DD");
         to = moment(to, "YYYY-MM-DD").format("YYYY/MM/DD");
-        Edna.search(onSearchResults, from, to);
+        var periodType = $("input[name='periodType']:checked" ).val();
+        Edna.search(onSearchResults, from, to, periodType);
 
     });
 
