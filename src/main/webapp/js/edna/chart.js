@@ -4,7 +4,8 @@ Edna.showChart = function(labels, billableData, unbillableData) {
     chart = new Highcharts.Chart({
         chart: {
             renderTo: 'ednaChart',
-            type: 'bar'
+            type: 'bar',
+            height: 10000
         },
 
         title: {
