@@ -5,6 +5,7 @@
     <title>Facet labs by Jørund, Alex & Jørgen</title>
     <link href="../bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="../bootstrap-datepicker/css/datepicker.css" rel="stylesheet">
+    <!--<link href="../select/select2.css" rel="stylesheet">-->
     <style>
         body {
             padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
@@ -53,9 +54,13 @@
             &nbsp;
             From: <input id="startDate" class="span2" type="text" size="16"/>
             &nbsp;
-            To: <input id="endDate" class="span2" type="text" size="16"/>
-        </div>
-        <!-- /btn-group -->
+            To: <input id="endDate"  class="span2" type="text" size="16">
+        </div><!-- /btn-group -->
+        <!-- hr/>
+        <div class="">
+            <span>Resources: </span>
+            <select id="resourceSelect" multiple style="width:500px"><option value="ARO" selected>ARO</option><option value="JVS">JVS</option></select>
+        </div -->
     </div>
 
     <div class="well">
@@ -189,6 +194,8 @@
     });
 
     $(function() {
+        $('#startDate').datepicker({format: 'yyyy-mm-dd'});
+        $('#endDate').datepicker({format: 'yyyy-mm-dd'});
         $('#thisYear').click();
     });
 </script>
