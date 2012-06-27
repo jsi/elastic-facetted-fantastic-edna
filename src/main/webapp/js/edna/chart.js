@@ -80,8 +80,7 @@ Edna.showChart = function(labels, billableData, unbillableData) {
     chart = new Highcharts.Chart({
         chart: {
             renderTo: 'ednaChart',
-            type: 'bar',
-            height: 10000
+            type: 'bar'
         },
 
         title: {
@@ -109,9 +108,7 @@ Edna.showChart = function(labels, billableData, unbillableData) {
                 formatter: function(){
                     return (Math.abs(this.value));
                 }
-            },
-            min: -200,
-            max: 200
+            }
         },
 
         plotOptions: {
