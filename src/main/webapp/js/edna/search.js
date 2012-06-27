@@ -52,3 +52,41 @@ Edna.search = function ( callbackResult, from, to )
     es.request( "POST", "edna4000/_search", billableSearch.toESJson() );
 
 };
+
+Edna.handleSearchResult = function( jsonData )
+{
+    console.log( "jsonData: ", jsonData );
+    var labels = [], billableArray = [], unbillableArray = [];
+
+    var tableData = new Array();
+    $.each( jsonData.billable, function( i, entry )
+    {
+        var date = new Date( entry.time );
+        tableData[i] = { "date" : date.toDateString(), "hoursBillable" : entry.total, "hoursUnbillable": 0  };
+    } );
+
+    $.each( jsonData.unbillable, function( i, entry )
+    {
+        if (!tableData[i]) {
+            var date = new Date( entry.time );
+            tableData[i] = { "date" : date.toDateString(), "hoursBillable" : 0 };
+        }
+        tableData[i].hoursUnbillable = entry.total;
+    } );
+
+    $.each( tableData, function( i, entry )
+    {
+        labels.push(entry.date);
+        billableArray.push(entry.hoursBillable);
+        unbillableArray.push(- entry.hoursUnbillable);
+    } );
+
+    Edna.showChart(labels, billableArray, unbillableArray);
+};
+
+Edna.Utils = Edna.Utils || {};
+
+Edna.Utils.something = function()
+{
+
+}
