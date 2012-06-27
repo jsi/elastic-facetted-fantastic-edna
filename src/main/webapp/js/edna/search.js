@@ -12,10 +12,10 @@ Edna.search = function ( callbackResult, from, to )
         var unbillableSearch = new Edna.SearchBuilder();
         unbillableSearch.setQuery( '{ "field" : {"billable" : false} }' );
         //unbillableSearch.setFilter( '{ "term" : { "billable" : false } }' );
-        unbillableSearch.addFacet( 'prday', '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "day" } }' );
-        var es = new ElasticSearch( {callback:handleUnbillableSearch, host:"localhost", port:9200 } );
+        unbillableSearch.addFacet( 'prday', '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "month" } }' );
+        var es = new ElasticSearch( {callback:handleUnbillableSearch, host:"leela", port:9200 } );
         console.log( "unbillableSearch.toESJson()", unbillableSearch.toESJson()  );
-        es.request( "POST", "_search", unbillableSearch.toESJson() );
+        es.request( "POST", "edna4000/_search", unbillableSearch.toESJson() );
     };
 
     var handleUnbillableSearch = function( data, xhr )
@@ -28,11 +28,11 @@ Edna.search = function ( callbackResult, from, to )
     var billableSearch = new Edna.SearchBuilder();
     billableSearch.setQuery( '{ "field" : {"billable" : true} }' );
     //billableSearch.setFilter( '{ "term" : { "billable" : true } }' );
-    billableSearch.addFacet( 'prday', '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "day" } }' );
+    billableSearch.addFacet( 'prday', '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "month" } }' );
 
-    var es = new ElasticSearch( {callback:handleBillableSearch, host:"localhost", port:9200 } );
+    var es = new ElasticSearch( {callback:handleBillableSearch, host:"leela", port:9200 } );
     console.log( "billableSearch.toESJson()", billableSearch.toESJson()  );
-    es.request( "POST", "_search", billableSearch.toESJson() );
+    es.request( "POST", "edna4000/_search", billableSearch.toESJson() );
 
 };
 
@@ -63,7 +63,7 @@ Edna.findAll = function ( callbackResult, from, size )
         callbackResult( entries );
     };
 
-    var es = new ElasticSearch( {callback:responseReceived, host:"localhost", port:9200 } );
+    var es = new ElasticSearch( {callback:responseReceived, host:"leela", port:9200 } );
     var query = '{ "match_all" : {}}';
     //var facets = '{ "tag": { "terms": { "field" : "resource", "size" : 10 } } }';
     var facets = '{ "histo1": { "date_histogram": { "key_field" : "logDate", "value_field" : "hours", "interval" : "day" } } }';
