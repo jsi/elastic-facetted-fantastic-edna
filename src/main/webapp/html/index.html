@@ -97,6 +97,11 @@
         <button id="searchBut" class="btn btn-primary">Search</button>
     </div>
 
+
+    <div id="loadingBar" style="display:none; width: 150px; margin:auto">
+        <div class="alert alert-info">Loading...</div>
+    </div>
+
     <div id="ednaChart" style="width: 900px; height: 1200px"></div>
 
 </div> <!-- /container -->
@@ -121,10 +126,14 @@
     var OPERATIONS = {ESU: true};
     var DEFAULT_RESOURCES = $.extend({}, CONSULTANTS, DEVELOPERS, PRODUCT, OPERATIONS);
     var ALL_RESOURCES = [];
+    var ALL_PROJECTS = [];
 
     var onSearchResults = function( jsonData )
     {
+        $('#ednaChart').show();
         Edna.handleSearchResult( jsonData );
+        $('#loadingBar').hide();
+        $('#searchBut').show();
     };
 
     $('#searchBut').click(function(){
@@ -138,6 +147,10 @@
         $("#resourceSelect option:selected").each(function(i, selected){
             resources.push($(selected).text());
         });
+
+        $('#searchBut').hide();
+        $('#ednaChart').hide();
+        $('#loadingBar').show();
         Edna.search(onSearchResults, from, to, periodType, resources);
     });
 
@@ -204,7 +217,13 @@
             $.each( res, function( i, resource ) {
                 ALL_RESOURCES.push(resource.term.toUpperCase());
             });
-            fillResourceDropdown();
+            fillResourceDropdown(DEFAULT_RESOURCES);
+        });
+
+        Edna.getProjectList(function(res) {
+            $.each( res, function( i, project ) {
+                ALL_PROJECTS.push(project.term);
+            });
         });
     });
 </script>

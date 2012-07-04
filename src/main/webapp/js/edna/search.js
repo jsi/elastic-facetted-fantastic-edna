@@ -176,5 +176,30 @@ Edna.getResourceList = function(resultsCallback) {
     es.request( "POST", "edna4000/_search", resourceSearch.toESJson() );
 }
 
+Edna.getProjectList = function(resultsCallback) {
+    var resCallback = function(data) {
+        var resources = data.facets.projectfacet.terms;
+        resultsCallback(resources);
+    }
+
+    var query = {
+        "match_all": {}
+    };
+    var facets = {
+        "terms": {
+            "field": "project",
+            "size": 100
+        }
+    };
+    var queryStr = JSON.stringify(query);
+    var facetsStr = JSON.stringify(facets);
+
+    var resourceSearch = new Edna.SearchBuilder();
+    resourceSearch.setQuery( queryStr );
+    resourceSearch.addFacet( 'projectfacet', facetsStr );
+    var es = new ElasticSearch( {callback: resCallback, host:"leela", port:9200 } );
+    es.request( "POST", "edna4000/_search", resourceSearch.toESJson() );
+}
+
 Edna.Utils = Edna.Utils || {};
 
