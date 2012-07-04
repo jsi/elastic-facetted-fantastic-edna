@@ -25,7 +25,7 @@ Edna.search = function ( callbackResult, from, to, periodType )
         var unbillableSearch = new Edna.SearchBuilder();
         unbillableSearch.setQuery( queryUnbillableStr );
         unbillableSearch.addFacet( 'prday',
-                                   '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "day" } }' );
+                                   '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "'+periodType+'" } }' );
         var es = new ElasticSearch( {callback:handleUnbillableSearch, host:"leela", port:9200 } );
         es.request( "POST", "edna4000/_search", unbillableSearch.toESJson() );
     };
@@ -48,7 +48,7 @@ Edna.search = function ( callbackResult, from, to, periodType )
 
     var billableSearch = new Edna.SearchBuilder();
     billableSearch.setQuery( queryBillableStr );
-    billableSearch.addFacet( 'prday', '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "day" } }' );
+    billableSearch.addFacet( 'prday', '{ "date_histogram" : { "key_field" : "logDate", "value_field" : "hours", "interval" : "'+periodType+'" } }' );
 
     var es = new ElasticSearch( {callback:handleBillableSearch, host:"leela", port:9200 } );
     es.request( "POST", "edna4000/_search", billableSearch.toESJson() );
@@ -131,6 +131,35 @@ Edna.handleSearchResult = function ( jsonData )
 
     Edna.showChart( labelsForChart, billableArrayForChart, unbillableArrayForChart );
 };
+
+Edna.getResourceList = function(resultsCallback) {
+    var resCallback = function(data) {
+        var resources = data.facets.resourcefacet.terms;
+        resultsCallback(resources);
+    }
+
+    var query = {
+        "match_all": {}
+    };
+    var facets = {
+        "terms": {
+            "field": "resource._tokenized",
+            "size": 100,
+            "exclude": [
+                "unknown",
+                "UNKNOWN"
+            ]
+        }
+    };
+    var queryStr = JSON.stringify(query);
+    var facetsStr = JSON.stringify(facets);
+
+    var resourceSearch = new Edna.SearchBuilder();
+    resourceSearch.setQuery( queryStr );
+    resourceSearch.addFacet( 'resourcefacet', facetsStr );
+    var es = new ElasticSearch( {callback: resCallback, host:"leela", port:9200 } );
+    es.request( "POST", "edna4000/_search", resourceSearch.toESJson() );
+}
 
 Edna.Utils = Edna.Utils || {};
 

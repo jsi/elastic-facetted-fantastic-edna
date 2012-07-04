@@ -1,11 +1,14 @@
 var Edna = Edna || {};
 
 Edna.showChart = function(labels, billableData, unbillableData) {
+    var ROW_HEIGHT = 20;
+    var LEGEND_HEIGHT = 120;
+    var height = (Math.max(billableData.length, unbillableData.length) * ROW_HEIGHT) + LEGEND_HEIGHT;
     chart = new Highcharts.Chart({
         chart: {
             renderTo: 'ednaChart',
             type: 'bar',
-            height: 10000
+            height: height
         },
 
         title: {
