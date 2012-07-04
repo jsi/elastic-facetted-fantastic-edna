@@ -133,8 +133,12 @@
         from = moment(from, "YYYY-MM-DD").format("YYYY/MM/DD");
         to = moment(to, "YYYY-MM-DD").format("YYYY/MM/DD");
         var periodType = $("input[name='periodType']:checked" ).val();
-        Edna.search(onSearchResults, from, to, periodType);
 
+        var resources = [];
+        $("#resourceSelect option:selected").each(function(i, selected){
+            resources.push($(selected).text());
+        });
+        Edna.search(onSearchResults, from, to, periodType, resources);
     });
 
     $('#lastWeek').click(function() {

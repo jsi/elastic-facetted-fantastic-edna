@@ -1,6 +1,6 @@
 var Edna = Edna || {};
 
-Edna.search = function ( callbackResult, from, to, periodType )
+Edna.search = function ( callbackResult, from, to, periodType, resources )
 {
     var jsonBillable;
     var jsonUnbillable;
@@ -13,13 +13,28 @@ Edna.search = function ( callbackResult, from, to, periodType )
         }
     };
 
+    var resourceFilter = {
+        "terms":{
+            "resource": resources
+        }
+    };
+
+    var combinedFilter = {};
+    if (resources && resources.length > 0) {
+        combinedFilter = {
+            "and": [dateFilter, resourceFilter]
+        };
+    } else {
+        combinedFilter = dateFilter;
+    }
+
     var handleBillableSearch = function ( data, xhr )
     {
         jsonBillable = data.facets.prday.entries;
 
         var queryUnbillable = {"filtered":{"query":{}, "filter":{}}};
         queryUnbillable.filtered.query = { "field":{"billable":false} };
-        queryUnbillable.filtered.filter = dateFilter;
+        queryUnbillable.filtered.filter = combinedFilter;
         var queryUnbillableStr = JSON.stringify( queryUnbillable );
 
         var unbillableSearch = new Edna.SearchBuilder();
@@ -43,7 +58,7 @@ Edna.search = function ( callbackResult, from, to, periodType )
 
     var queryBillable = {"filtered":{"query":{}, "filter":{}}};
     queryBillable.filtered.query = { "field":{"billable":true} };
-    queryBillable.filtered.filter = dateFilter;
+    queryBillable.filtered.filter = combinedFilter;
     var queryBillableStr = JSON.stringify( queryBillable );
 
     var billableSearch = new Edna.SearchBuilder();

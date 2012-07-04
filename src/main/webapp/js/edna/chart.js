@@ -63,11 +63,11 @@ Edna.showChart = function(labels, billableData, unbillableData) {
         },
 
         series: [{
-            name: 'Billable',
-            data: billableData
-        }, {
             name: 'Unbillable',
             data: unbillableData
+        }, {
+            name: 'Billable',
+            data: billableData
         }]
     });
 }
