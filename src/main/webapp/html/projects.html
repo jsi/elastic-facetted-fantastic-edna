@@ -27,8 +27,8 @@
             <a class="brand" href="#">Edna goes Elastic</a>
             <div class="nav-collapse">
                 <ul class="nav">
-                    <li class="active"><a href="#">Edna</a></li>
-                    <li><a href="projects.html">Projects</a></li>
+                    <li><a href="index.html">Edna</a></li>
+                    <li class="active"><a href="#">Projects</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>
@@ -37,8 +37,8 @@
 
 <div class="container">
 
-    <h1>Edna goes Elastic</h1>
-    <p>Use this document as a way to quick start any new project.<br> All you get is this message and a barebones HTML document.</p>
+    <h1>Projects</h1>
+    <p>Projects tag cloud.</p>
 
     <div class="well">
         <div class="btn-group">
@@ -74,35 +74,20 @@
                 <input name="resourceType" id="all" value="ALL" type="radio" checked/> All
             </label>
         </div>
-        <hr/>
-        <div class="btn-group">
-            Select periodization:
-            &nbsp;
-            <label class="radio inline">
-                <input name="periodType" id="periodYear" value="year" type="radio" size="16"/> Year
-            </label>
-            <label class="radio inline">
-                <input name="periodType" id="periodMonth" value="month" type="radio" size="16" checked/> Month
-            </label>
-            <label class="radio inline">
-                <input name="periodType" id="periodWeek" value="week" type="radio" size="16"/> Week
-            </label>
-            <label class="radio inline">
-                <input name="periodType" id="periodDay" value="day" type="radio" size="16"/> Day
-            </label>
-        </div>
     </div>
 
     <div class="btn-group">
-        <button id="searchBut" class="btn btn-primary">Search</button>
+        <button id="generateBut" class="btn btn-primary">Generate</button>
     </div>
-
+    <br/>
 
     <div id="loadingBar" style="display:none; width: 150px; margin:auto">
         <div class="alert alert-info">Loading...</div>
     </div>
 
-    <div id="ednaChart" style="width: 900px; height: 1200px"></div>
+    <div id="tagCloudSvg">
+        <svg width="960" height="600"/>
+    </div>
 
 </div> <!-- /container -->
 
@@ -112,12 +97,12 @@
 <script src="../js/json/json2.js" type="text/javascript"></script>
 <script src="../js/moment/moment.min.js" type="text/javascript"></script>
 <script src="../select/select2.min.js" type="text/javascript"></script>
-<script src="../js/highcharts/highcharts.src.js" type="text/javascript"></script>
 <script src="../js/edna/es-searchbuilder.js"></script>
 <script src="../js/edna/search.js"></script>
-<script src="../js/edna/chart.js"></script>
 <script src="../js/elasticsearch-js/elasticsearch.js" type="text/javascript"></script>
 <script src="../js/elasticsearch-js/elasticsearch-jquery.js" type="text/javascript"></script>
+<script src="../js/d3/d3.v2.min.js" type="text/javascript"></script>
+<script src="../js/d3/d3.layout.cloud.js" type="text/javascript"></script>
 
 <script type="text/javascript">
     var CONSULTANTS = {BHJ: true, DAA: true, TLO: true, MLA: true, LJL: true, RFO: true};
@@ -126,14 +111,12 @@
     var OPERATIONS = {ESU: true};
     var DEFAULT_RESOURCES = $.extend({}, CONSULTANTS, DEVELOPERS, PRODUCT, OPERATIONS);
     var ALL_RESOURCES = [];
-    var ALL_PROJECTS = [];
 
     var onSearchResults = function( jsonData )
     {
-        $('#ednaChart').show();
         Edna.handleSearchResult( jsonData );
         $('#loadingBar').hide();
-        $('#searchBut').show();
+        $('#generateBut').show();
     };
 
     $('#searchBut').click(function(){
@@ -141,7 +124,6 @@
         var to = $('#endDate').val();
         from = moment(from, "YYYY-MM-DD").format("YYYY/MM/DD");
         to = moment(to, "YYYY-MM-DD").format("YYYY/MM/DD");
-        var periodType = $("input[name='periodType']:checked" ).val();
 
         var resources = [];
         $("#resourceSelect option:selected").each(function(i, selected){
@@ -149,9 +131,7 @@
         });
 
         $('#searchBut').hide();
-        $('#ednaChart').hide();
         $('#loadingBar').show();
-        Edna.search(onSearchResults, from, to, periodType, resources);
     });
 
     $('#lastWeek').click(function() {
@@ -220,10 +200,54 @@
             fillResourceDropdown(DEFAULT_RESOURCES);
         });
 
+        function generateRandomColor(mixR, mixG, mixB) {
+            // based on java code in http://stackoverflow.com/questions/43044/algorithm-to-randomly-generate-an-aesthetically-pleasing-color-palette
+            var red = Math.round(Math.random() * 256);
+            var green = Math.round(Math.random() * 256);
+            var blue = Math.round(Math.random() * 256);
+
+            red = Math.round((red + mixR) / 2);
+            green = Math.round((green + mixG) / 2);
+            blue = Math.round((blue + mixB) / 2);
+
+            var color = '#'+red.toString(16)+green.toString(16)+blue.toString(16);
+            return color;
+        }
+
         Edna.getProjectList(function(res) {
+            var projectList = [];
+            var maxCount = res && (res.length > 0) ? res[0].count : 0;
+            var width = 900, height = 600;
             $.each( res, function( i, project ) {
-                ALL_PROJECTS.push(project.term);
+                projectList.push({"text": project.term, "size": 10 + (project.count / maxCount)*70});
             });
+
+            d3.layout.cloud().size([width, height])
+                    .words(projectList.map(function(d) {
+                        return {text: d.text, size: d.size};
+                    }))
+                    .rotate(function(d) { return ~~(Math.random() * 5) * 30 - 60; })
+                    .fontSize(function(d) { console.log(d.text+' -> ' + d.size); return d.size; })
+                    .on("end", draw)
+                    .start();
+
+            function draw(words) {
+                d3.select("#tagCloudSvg svg")
+                        .append("g")
+                        .attr("transform", "translate("+(width/2)+","+(height/2)+")")
+                        .selectAll("text")
+                        .data(words)
+                        .enter().append("text")
+                        .style("font-size", function(d) { return d.size + "px"; })
+                        .style("fill", function() {
+                            return generateRandomColor(150, 150, 150);//"hsl(" + Math.random() * 360 + ",100%,50%)";
+                        })
+                        .attr("text-anchor", "middle")
+                        .attr("transform", function(d) {
+                            return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                        })
+                        .text(function(d) { return d.text; });
+            }
         });
     });
 </script>

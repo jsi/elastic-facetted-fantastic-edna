@@ -147,11 +147,12 @@ Edna.handleSearchResult = function ( jsonData )
     Edna.showChart( labelsForChart, billableArrayForChart, unbillableArrayForChart );
 };
 
-Edna.getResourceList = function(resultsCallback) {
+Edna.getResourceList = function(resultsCallback)
+{
     var resCallback = function(data) {
         var resources = data.facets.resourcefacet.terms;
         resultsCallback(resources);
-    }
+    };
 
     var query = {
         "match_all": {}
@@ -174,13 +175,14 @@ Edna.getResourceList = function(resultsCallback) {
     resourceSearch.addFacet( 'resourcefacet', facetsStr );
     var es = new ElasticSearch( {callback: resCallback, host:"leela", port:9200 } );
     es.request( "POST", "edna4000/_search", resourceSearch.toESJson() );
-}
+};
 
-Edna.getProjectList = function(resultsCallback) {
+Edna.getProjectList = function(resultsCallback)
+{
     var resCallback = function(data) {
         var resources = data.facets.projectfacet.terms;
         resultsCallback(resources);
-    }
+    };
 
     var query = {
         "match_all": {}
@@ -188,7 +190,8 @@ Edna.getProjectList = function(resultsCallback) {
     var facets = {
         "terms": {
             "field": "project",
-            "size": 100
+            "size": 100,
+            "order" : "count"
         }
     };
     var queryStr = JSON.stringify(query);
@@ -199,7 +202,7 @@ Edna.getProjectList = function(resultsCallback) {
     resourceSearch.addFacet( 'projectfacet', facetsStr );
     var es = new ElasticSearch( {callback: resCallback, host:"leela", port:9200 } );
     es.request( "POST", "edna4000/_search", resourceSearch.toESJson() );
-}
+};
 
 Edna.Utils = Edna.Utils || {};
 
