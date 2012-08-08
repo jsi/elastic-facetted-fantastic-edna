@@ -3,7 +3,11 @@
 <head>
     <meta charset="utf-8">
     <title>Facet labs by Jørund, Alex & Jørgen</title>
-    <link href="../bootstrap/css/bootstrap.css" rel="stylesheet">
+    <!--<link href="../bootstrap/css/bootstrap.css" rel="stylesheet">-->
+    <!--<link href="../bootstrap/css/bootstrap-united.css" rel="stylesheet">-->
+    <!-- More Bootstrap themes here: http://bootswatch.com/ -->
+    <link href="../bootstrap/css/bootstrap-cerulean.css" rel="stylesheet">
+
     <link href="../bootstrap-datepicker/css/datepicker.css" rel="stylesheet">
     <link href="../select/select2.css" rel="stylesheet">
     <style>
@@ -27,7 +31,7 @@
             <a class="brand" href="#">Edna goes Elastic</a>
             <div class="nav-collapse">
                 <ul class="nav">
-                    <li><a href="index.html">Edna</a></li>
+                    <li><a href="index.html">Hours</a></li>
                     <li class="active"><a href="#">Projects</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
@@ -37,8 +41,8 @@
 
 <div class="container">
 
-    <h1>Projects</h1>
-    <p>Projects tag cloud.</p>
+    <h1>Edna Projects</h1>
+    <p>Projects tag cloud. Word size &asymp; &sum;hours</p>
 
     <div class="well">
         <div class="btn-group">
@@ -77,7 +81,7 @@
     </div>
 
     <div class="btn-group">
-        <button id="generateBut" class="btn btn-primary">Generate</button>
+        <button id="generateBut" class="btn btn-success">Generate</button>
     </div>
     <br/>
 
@@ -114,12 +118,12 @@
 
     var onSearchResults = function( jsonData )
     {
-        Edna.handleSearchResult( jsonData );
+        handleProjectListResults(jsonData);
         $('#loadingBar').hide();
         $('#generateBut').show();
     };
 
-    $('#searchBut').click(function(){
+    $('#generateBut').click(function(){
         var from = $('#startDate').val();
         var to = $('#endDate').val();
         from = moment(from, "YYYY-MM-DD").format("YYYY/MM/DD");
@@ -130,8 +134,9 @@
             resources.push($(selected).text());
         });
 
-        $('#searchBut').hide();
+        $('#generateBut').hide();
         $('#loadingBar').show();
+        Edna.getProjectList(onSearchResults, from, to, resources);
     });
 
     $('#lastWeek').click(function() {
@@ -188,6 +193,58 @@
         fillResourceDropdown();
     });
 
+    function handleProjectListResults(res) {
+        var projectList = [];
+        var maxCount = res && (res.length > 0) ? res[0].count : 0;
+        var width = 900, height = 600;
+        $.each( res, function( i, project ) {
+            projectList.push({"text": project.term, "size": 10 + (project.count / maxCount)*70});
+        });
+
+        $("#tagCloudSvg svg").empty();
+        d3.layout.cloud().size([width, height])
+                .words(projectList.map(function(d) {
+            return {text: d.text, size: d.size};
+        }))
+                .rotate(function(d) { return ~~(Math.random() * 5) * 30 - 60; })
+                .fontSize(function(d) { return d.size; })
+                .on("end", draw)
+                .start();
+
+        function draw(words) {
+            d3.select("#tagCloudSvg svg")
+                    .append("g")
+                    .attr("transform", "translate("+(width/2)+","+(height/2)+")")
+                    .selectAll("text")
+                    .data(words)
+                    .enter().append("text")
+                    .style("font-family", "Arial")
+                    .style("font-size", function(d) { return d.size + "px"; })
+                    .style("fill", function() {
+                        return generateRandomColor(150, 150, 150);
+                    })
+                    .attr("text-anchor", "middle")
+                    .attr("transform", function(d) {
+                        return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                    })
+                    .text(function(d) { return d.text; });
+        }
+    }
+
+    function generateRandomColor(mixR, mixG, mixB) {
+        // based on java code in http://stackoverflow.com/questions/43044/algorithm-to-randomly-generate-an-aesthetically-pleasing-color-palette
+        var red = Math.round(Math.random() * 256);
+        var green = Math.round(Math.random() * 256);
+        var blue = Math.round(Math.random() * 256);
+
+        red = Math.round((red + mixR) / 2);
+        green = Math.round((green + mixG) / 2);
+        blue = Math.round((blue + mixB) / 2);
+
+        var color = '#'+red.toString(16)+green.toString(16)+blue.toString(16);
+        return color;
+    }
+
     $(function() {
         $('#startDate').datepicker({format: 'yyyy-mm-dd'});
         $('#endDate').datepicker({format: 'yyyy-mm-dd'});
@@ -200,56 +257,9 @@
             fillResourceDropdown(DEFAULT_RESOURCES);
         });
 
-        function generateRandomColor(mixR, mixG, mixB) {
-            // based on java code in http://stackoverflow.com/questions/43044/algorithm-to-randomly-generate-an-aesthetically-pleasing-color-palette
-            var red = Math.round(Math.random() * 256);
-            var green = Math.round(Math.random() * 256);
-            var blue = Math.round(Math.random() * 256);
-
-            red = Math.round((red + mixR) / 2);
-            green = Math.round((green + mixG) / 2);
-            blue = Math.round((blue + mixB) / 2);
-
-            var color = '#'+red.toString(16)+green.toString(16)+blue.toString(16);
-            return color;
-        }
-
-        Edna.getProjectList(function(res) {
-            var projectList = [];
-            var maxCount = res && (res.length > 0) ? res[0].count : 0;
-            var width = 900, height = 600;
-            $.each( res, function( i, project ) {
-                projectList.push({"text": project.term, "size": 10 + (project.count / maxCount)*70});
-            });
-
-            d3.layout.cloud().size([width, height])
-                    .words(projectList.map(function(d) {
-                        return {text: d.text, size: d.size};
-                    }))
-                    .rotate(function(d) { return ~~(Math.random() * 5) * 30 - 60; })
-                    .fontSize(function(d) { console.log(d.text+' -> ' + d.size); return d.size; })
-                    .on("end", draw)
-                    .start();
-
-            function draw(words) {
-                d3.select("#tagCloudSvg svg")
-                        .append("g")
-                        .attr("transform", "translate("+(width/2)+","+(height/2)+")")
-                        .selectAll("text")
-                        .data(words)
-                        .enter().append("text")
-                        .style("font-size", function(d) { return d.size + "px"; })
-                        .style("fill", function() {
-                            return generateRandomColor(150, 150, 150);//"hsl(" + Math.random() * 360 + ",100%,50%)";
-                        })
-                        .attr("text-anchor", "middle")
-                        .attr("transform", function(d) {
-                            return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-                        })
-                        .text(function(d) { return d.text; });
-            }
-        });
+        Edna.getProjectList(handleProjectListResults);
     });
+
 </script>
 </body>
 </html>

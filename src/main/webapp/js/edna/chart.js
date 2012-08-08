@@ -1,6 +1,6 @@
 var Edna = Edna || {};
 
-Edna.showChart = function(labels, billableData, unbillableData) {
+Edna.showChart = function(labels, billableData, unbillableData, title) {
     var ROW_HEIGHT = 20;
     var LEGEND_HEIGHT = 120;
     var height = (Math.max(billableData.length, unbillableData.length) * ROW_HEIGHT) + LEGEND_HEIGHT;
@@ -12,7 +12,7 @@ Edna.showChart = function(labels, billableData, unbillableData) {
         },
 
         title: {
-            text: 'Hours in Enonic by resource, 2011'
+            text: title
         },
 
         subtitle: {

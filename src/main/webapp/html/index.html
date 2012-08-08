@@ -3,7 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Facet labs by Jørund, Alex & Jørgen</title>
-    <link href="../bootstrap/css/bootstrap.css" rel="stylesheet">
+    <!--<link href="../bootstrap/css/bootstrap.css" rel="stylesheet">-->
+    <!--<link href="../bootstrap/css/bootstrap-united.css" rel="stylesheet">-->
+    <!-- More Bootstrap themes here: http://bootswatch.com/ -->
+    <link href="../bootstrap/css/bootstrap-cerulean.css" rel="stylesheet">
     <link href="../bootstrap-datepicker/css/datepicker.css" rel="stylesheet">
     <link href="../select/select2.css" rel="stylesheet">
     <style>
@@ -24,10 +27,10 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </a>
-            <a class="brand" href="#">Edna goes Elastic</a>
+            <a class="brand" href="/">Edna goes Elastic</a>
             <div class="nav-collapse">
                 <ul class="nav">
-                    <li class="active"><a href="#">Edna</a></li>
+                    <li class="active"><a href="#">Hours</a></li>
                     <li><a href="projects.html">Projects</a></li>
                 </ul>
             </div><!--/.nav-collapse -->
@@ -37,8 +40,8 @@
 
 <div class="container">
 
-    <h1>Edna goes Elastic</h1>
-    <p>Use this document as a way to quick start any new project.<br> All you get is this message and a barebones HTML document.</p>
+    <h1>Resource hours</h1>
+    <p>Billable and unbillable hours filtered by resource and period.</p>
 
     <div class="well">
         <div class="btn-group">
@@ -94,7 +97,7 @@
     </div>
 
     <div class="btn-group">
-        <button id="searchBut" class="btn btn-primary">Search</button>
+        <button id="searchBut" class="btn btn-success">Search</button>
     </div>
 
 
@@ -130,8 +133,10 @@
 
     var onSearchResults = function( jsonData )
     {
+        var from = $('#startDate').val();
+        var to = $('#endDate').val();
         $('#ednaChart').show();
-        Edna.handleSearchResult( jsonData );
+        Edna.handleSearchResult( jsonData, from, to );
         $('#loadingBar').hide();
         $('#searchBut').show();
     };
