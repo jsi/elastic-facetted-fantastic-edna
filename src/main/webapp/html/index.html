@@ -3,10 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Facet labs by Jørund, Alex & Jørgen</title>
-    <!--<link href="../bootstrap/css/bootstrap.css" rel="stylesheet">-->
-    <!--<link href="../bootstrap/css/bootstrap-united.css" rel="stylesheet">-->
-    <!-- More Bootstrap themes here: http://bootswatch.com/ -->
-    <link href="../bootstrap/css/bootstrap-cerulean.css" rel="stylesheet">
+    <link href="../bootstrap/css/bootstrap.css" rel="stylesheet" id="cssLink">
     <link href="../bootstrap-datepicker/css/datepicker.css" rel="stylesheet">
     <link href="../select/select2.css" rel="stylesheet">
     <style>
@@ -32,6 +29,13 @@
                 <ul class="nav">
                     <li class="active"><a href="#">Hours</a></li>
                     <li><a href="projects.html">Projects</a></li>
+                </ul>
+                <ul class="nav pull-right">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">Themes <b class="caret"></b></a>
+                        <ul class="dropdown-menu" id="themeList">
+                        </ul>
+                    </li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>
@@ -119,6 +123,7 @@
 <script src="../js/edna/es-searchbuilder.js"></script>
 <script src="../js/edna/search.js"></script>
 <script src="../js/edna/chart.js"></script>
+<script src="../js/edna/themes.js" type="text/javascript"></script>
 <script src="../js/elasticsearch-js/elasticsearch.js" type="text/javascript"></script>
 <script src="../js/elasticsearch-js/elasticsearch-jquery.js" type="text/javascript"></script>
 
