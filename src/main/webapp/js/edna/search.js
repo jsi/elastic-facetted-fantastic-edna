@@ -179,19 +179,35 @@ Edna.handleSearchResult = function ( jsonData, from, to )
     Edna.showChart( labelsForChart, billableArrayForChart, unbillableArrayForChart, getTitleForHoursChart(periodType, from, to) );
 };
 
-Edna.getResourceList = function(resultsCallback)
+Edna.getResourceList = function(resultsCallback, from, to)
 {
     var resCallback = function(data) {
         var resources = data.facets.resourcefacet.terms;
         resultsCallback(resources);
     };
 
+    var dateFilter = from && to && {
+        "numeric_range":{
+            "logDate":{
+                "lt":to,
+                "gte":from
+            }
+        }
+    };
+
     var query = {
         "match_all": {}
     };
+    if (dateFilter) {
+        query = {"filtered":{"query":{}, "filter":{}}};
+        query.filtered.query = { "match_all": {} };
+        query.filtered.filter = dateFilter;
+    }
     var facets = {
-        "terms": {
-            "field": "resource._tokenized",
+        "terms_stats": {
+            "field": "resource",
+            "key_field": "resource",
+            "value_field" : "hours",
             "size": 100,
             "exclude": [
                 "unknown",
@@ -245,10 +261,10 @@ Edna.getProjectList = function(resultsCallback, from, to, resources)
     query.filtered.filter = combinedFilter;
 
     var facets = {
-        "terms": {
-            "field": "project",
+        "terms_stats": {
+            "key_field": "project",
             "size": 100,
-            "order" : "count"
+            "value_field" : "hours"
         }
     };
     var queryStr = JSON.stringify(query);
